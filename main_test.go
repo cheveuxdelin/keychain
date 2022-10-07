@@ -68,8 +68,8 @@ func TestCredentials(t *testing.T) {
 
 	defer os.Remove("test")
 	var testCredentials []credential = []credential{
-		{user: []byte("adolfo"), password: []byte("adolfo")},
-		{user: []byte("cachis"), password: []byte("chakis")},
+		{user: "adolfo", password: "adolfo"},
+		{user: "cachis", password: "chakis"},
 	}
 
 	secret := randomSecret()
@@ -84,27 +84,13 @@ func TestCredentials(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	if len(k2.credentials) != len(testCredentials) {
-		t.Error("popo")
+	if len(testCredentials) != len(k2.credentials) {
+		t.Error("error")
 	}
-
 	for i := range testCredentials {
-		if len(testCredentials[i].user) != len(k2.credentials[i].user) {
-			t.Error("popo")
-		}
-		for j := range testCredentials[i].user {
-			if testCredentials[i].user[j] != k2.credentials[i].user[j] {
-				t.Error("popo")
-			}
-		}
-		if len(testCredentials[i].password) != len(k2.credentials[i].password) {
-			t.Error("popo")
-		}
-		for j := range testCredentials[i].password {
-			if testCredentials[i].password[j] != k2.credentials[i].password[j] {
-				t.Error("popo")
-			}
+		if testCredentials[i].user != k2.credentials[i].user ||
+			testCredentials[i].password != k2.credentials[i].password {
+			t.Error("error")
 		}
 	}
 }

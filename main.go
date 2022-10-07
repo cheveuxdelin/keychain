@@ -17,8 +17,8 @@ type settings struct {
 }
 
 type credential struct {
-	user     []byte
-	password []byte
+	user     string
+	password string
 }
 
 type Keychain struct {
@@ -30,9 +30,9 @@ type Keychain struct {
 func (k *Keychain) credentialsToBytes() []byte {
 	var b bytes.Buffer
 	for i := range k.credentials {
-		b.Write(k.credentials[i].user)
+		b.WriteString(k.credentials[i].user)
 		b.WriteByte(k.settings.wordDelimiter)
-		b.Write(k.credentials[i].password)
+		b.WriteString(k.credentials[i].password)
 		b.WriteByte(k.settings.lineDelimiter)
 	}
 	return b.Bytes()
@@ -69,14 +69,19 @@ func (k *Keychain) load() (err error) {
 			password.WriteByte(decrypted[i])
 		}
 		i++
-		k.credentials = append(k.credentials, credential{user: []byte(user.String()), password: []byte(password.String())})
+		k.credentials = append(
+			k.credentials,
+			credential{
+				user:     user.String(),
+				password: password.String(),
+			})
 		user.Reset()
 		password.Reset()
 	}
 	return nil
 }
 
-func (k *Keychain) Add(user []byte, password []byte) {
+func (k *Keychain) Add(user string, password string) {
 	k.credentials = append(k.credentials, credential{user: user, password: password})
 	k.save()
 }
