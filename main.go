@@ -1,13 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/cheveuxdelin/keychain/crypt"
 	"github.com/cheveuxdelin/keychain/secret"
+	"github.com/eiannone/keyboard"
+	"github.com/gookit/color"
+	"github.com/k0kubun/go-ansi"
 )
 
 type settings struct {
@@ -131,6 +137,120 @@ func CreateKeychain() (k Keychain) {
 	return
 }
 
-func main() {
+func readLine() (b []byte) {
+	reader := bufio.NewReader(os.Stdin)
+	b, err := reader.ReadBytes('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
 
+func (k *Keychain) userAlreadyCreated() bool {
+	_, err := os.Stat(k.settings.filename)
+	return errors.Is(err, os.ErrNotExist)
+}
+
+func (c *credential) print(indexNumber int) string {
+	return fmt.Sprintf("[%d] %-20s | %-20s", indexNumber, c.user, c.password)
+}
+
+func isNumber(r rune) bool {
+	return r >= '0' && r <= '9'
+}
+
+func main() {
+	fmt.Println("-------------Keychain-------------")
+	k := CreateKeychain()
+	fmt.Print("Insert 🔑: ")
+	b := readLine()
+	secret, err := secret.CreateSecret(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if k.userAlreadyCreated() {
+		k.setPassword(secret)
+	} else {
+		err := k.login(secret)
+
+		if err != nil {
+			color.Red.Println("Incorrect password!")
+		} else {
+			color.Green.Println("Success!")
+
+			for i := range k.credentials {
+				if i == len(k.credentials)-1 {
+					color.BgYellow.Println(k.credentials[i].print(i))
+				} else {
+					color.BgBlack.Println(k.credentials[i].print(i))
+				}
+			}
+
+			var currentIndex int = len(k.credentials) - 1
+
+			ansi.CursorHide()
+
+			fmt.Print("d: delete")
+
+			ansi.CursorPreviousLine(0)
+
+			for {
+				value, arrowKey, err := keyboard.GetSingleKey()
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				if value == rune('q') {
+					ansi.CursorShow()
+					os.Exit(0)
+				}
+
+				didMove := false
+
+				if isNumber(value) {
+					if indexToMove := int(value - '0'); indexToMove <= len(k.credentials)-1 {
+						if linesToMoveDown := indexToMove - currentIndex; linesToMoveDown != 0 {
+							ansi.CursorHorizontalAbsolute(0)
+							color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+							if linesToMoveDown > 0 {
+								if newIndex := currentIndex + linesToMoveDown; newIndex <= len(k.credentials)-1 {
+									ansi.CursorNextLine(linesToMoveDown)
+									didMove = true
+									currentIndex = newIndex
+								}
+							} else if linesToMoveDown != 0 {
+								linesToMoveUp := -linesToMoveDown
+								if newIndex := currentIndex - linesToMoveUp; newIndex >= 0 {
+									ansi.CursorPreviousLine(linesToMoveUp)
+									didMove = true
+									currentIndex = newIndex
+								}
+							}
+						}
+					}
+				} else if arrowKey == keyboard.KeyArrowUp {
+					if currentIndex > 0 {
+						ansi.CursorHorizontalAbsolute(0)
+						color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+						ansi.CursorPreviousLine(0)
+						currentIndex--
+						didMove = true
+					}
+				} else if arrowKey == keyboard.KeyArrowDown {
+					if currentIndex < len(k.credentials)-1 {
+						ansi.CursorHorizontalAbsolute(0)
+						color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+						ansi.CursorNextLine(0)
+						currentIndex++
+						didMove = true
+					}
+				}
+
+				if didMove {
+					color.BgYellow.Print(k.credentials[currentIndex].print(currentIndex))
+				}
+			}
+		}
+	}
 }
