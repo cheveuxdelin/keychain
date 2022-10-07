@@ -22,11 +22,6 @@ type settings struct {
 	lineDelimiter byte
 }
 
-type credential struct {
-	user     string
-	password string
-}
-
 type Keychain struct {
 	credentials []credential
 	secret      secret.Secret
@@ -151,15 +146,12 @@ func (k *Keychain) userAlreadyCreated() bool {
 	return errors.Is(err, os.ErrNotExist)
 }
 
-func (c *credential) print(indexNumber int) string {
-	return fmt.Sprintf("[%d] %-20s | %-20s", indexNumber, c.user, c.password)
-}
-
 func isNumber(r rune) bool {
 	return r >= '0' && r <= '9'
 }
 
 func main() {
+	fmt.Printf("\033c")
 	fmt.Println("-------------Keychain-------------")
 	k := CreateKeychain()
 	fmt.Print("Insert 🔑: ")
