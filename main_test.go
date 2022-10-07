@@ -67,16 +67,15 @@ func TestBadLogin(t *testing.T) {
 func TestCredentials(t *testing.T) {
 
 	defer os.Remove("test")
-	var c map[string]string = map[string]string{
-		"el pepe":    "ete sech",
-		"la chona":   "se mueve",
-		"y la gente": "le grita",
+	var testCredentials []credential = []credential{
+		{user: []byte("adolfo"), password: []byte("adolfo")},
+		{user: []byte("cachis"), password: []byte("chakis")},
 	}
 
 	secret := randomSecret()
 	k := createTestKeychain()
 	k.setPassword(secret)
-	k.credentials = c
+	k.credentials = testCredentials
 	k.save()
 
 	k2 := createTestKeychain()
@@ -86,16 +85,26 @@ func TestCredentials(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(k2.credentials) != len(c) {
+	if len(k2.credentials) != len(testCredentials) {
 		t.Error("popo")
 	}
-	for key, value := range c {
-		value2, ok := k2.credentials[key]
-		if !ok {
+
+	for i := range testCredentials {
+		if len(testCredentials[i].user) != len(k2.credentials[i].user) {
 			t.Error("popo")
 		}
-		if value != value2 {
-			t.Error("pop2")
+		for j := range testCredentials[i].user {
+			if testCredentials[i].user[j] != k2.credentials[i].user[j] {
+				t.Error("popo")
+			}
+		}
+		if len(testCredentials[i].password) != len(k2.credentials[i].password) {
+			t.Error("popo")
+		}
+		for j := range testCredentials[i].password {
+			if testCredentials[i].password[j] != k2.credentials[i].password[j] {
+				t.Error("popo")
+			}
 		}
 	}
 }
