@@ -55,3 +55,19 @@ func RandomSecret() (s secret.Secret) {
 	rand.Read(s)
 	return
 }
+
+func Max(a, b int) int {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
+
+func Min(a, b int) int {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
+}

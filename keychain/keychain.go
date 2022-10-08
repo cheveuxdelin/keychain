@@ -39,6 +39,10 @@ func (k Keychain) credentialsToBytes() []byte {
 	return b.Bytes()
 }
 
+var longestCredential = 0
+
+const TERMINAL_MINIMUM_WIDTH int = 30
+
 func (k *Keychain) save() {
 	encrypted, err := crypt.Encrypt(k.credentialsToBytes(), k.secret)
 	if err != nil {
@@ -70,12 +74,12 @@ func (k *Keychain) load() (err error) {
 			password.WriteByte(decrypted[i])
 		}
 		i++
-		k.credentials = append(
-			k.credentials,
-			credential{
-				user:     user.String(),
-				password: password.String(),
-			})
+		var newCredentials credential = credential{
+			user:     user.String(),
+			password: password.String(),
+		}
+		longestCredential = utils.Max(longestCredential, newCredentials.Length())
+		k.credentials = append(k.credentials, newCredentials)
 		user.Reset()
 		password.Reset()
 	}
@@ -88,14 +92,6 @@ func (k *Keychain) createCredential(user string, password string) {
 }
 
 func (k *Keychain) setPassword(secret secret.Secret) {
-	/*
-		fmt.Print("Insert new secret 🔑 (Must be between 1-32 ASCII characters): ")
-		reader := bufio.NewReader(os.Stdin)
-		b, err := reader.ReadBytes('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
-	*/
 	k.secret = secret
 	k.save()
 }
@@ -161,7 +157,8 @@ func (k *Keychain) run() {
 	var safe bool = true
 	for {
 		clearConsole()
-		fmt.Println("--------------------------Keychain--------------------------")
+		fmt.Println("Keychain v0.3.0")
+		PrintHeaders()
 		var currentIndex int = len(k.credentials) - 1
 		ansi.CursorHide()
 		for i := range k.credentials {
@@ -179,7 +176,7 @@ func (k *Keychain) run() {
 				}
 			}
 		}
-		fmt.Print("a: add, q: quit")
+		fmt.Print("a: add   d: delete   q: quit")
 		ansi.CursorPreviousLine(0)
 
 		for {
@@ -248,7 +245,7 @@ func (k *Keychain) run() {
 			} else if value == 'a' {
 				k.CreateCredential()
 				break
-			} else if value == 'd' && len(k.credentials) >= 0 {
+			} else if value == 'd' && len(k.credentials) > 0 {
 				k.DeleteCredential(currentIndex)
 				break
 			} else if value == 's' {

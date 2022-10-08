@@ -3,6 +3,8 @@ package keychain
 import (
 	"fmt"
 	"strings"
+
+	"github.com/gookit/color"
 )
 
 type credential struct {
@@ -10,10 +12,40 @@ type credential struct {
 	password string
 }
 
+var numberColumnWidth int = 5
+var userColumnWidth int = 15
+var passwordColumnWith int = 20
+
+func PrintHeaders() {
+	color.Set(color.BgGreen, color.FgCyan)
+	spaceForNumber := strings.Repeat(" ", numberColumnWidth/2)
+	number := spaceForNumber + "#" + spaceForNumber
+	fmt.Print(number)
+	fmt.Print("|")
+	fmt.Printf("%-*s", userColumnWidth, "user")
+	fmt.Print("|")
+	fmt.Printf("%-*s", passwordColumnWith, "password")
+	fmt.Println()
+	color.Reset()
+}
+
 func (c *credential) Print(indexNumber int) string {
-	return fmt.Sprintf("[%d] %-20s | %-20s", indexNumber, c.user, c.password)
+	spaceForNumber := strings.Repeat(" ", numberColumnWidth/2-1)
+	paddedNumber := fmt.Sprintf("%s[%d]%s", spaceForNumber, indexNumber, spaceForNumber)
+	paddedUser := fmt.Sprintf("%-*s", userColumnWidth, c.user)
+	paddedPassword := fmt.Sprintf("%-*s", passwordColumnWith, c.password)
+	return fmt.Sprint(strings.Join([]string{paddedNumber, paddedUser, paddedPassword}, "|"))
 }
 
 func (c *credential) PrintSafe(indexNumber int) string {
-	return fmt.Sprintf("[%d] %-20s | %-20s", indexNumber, c.user, strings.Repeat("•", len(c.password)))
+	spaceForNumber := strings.Repeat(" ", numberColumnWidth/2-1)
+	paddedNumber := fmt.Sprintf("%s[%d]%s", spaceForNumber, indexNumber, spaceForNumber)
+
+	paddedUser := fmt.Sprintf("%-*s", userColumnWidth, c.user)
+	paddedPassword := fmt.Sprintf("%-*s", passwordColumnWith, strings.Repeat("*", len(c.password)))
+	return fmt.Sprint(strings.Join([]string{paddedNumber, paddedUser, paddedPassword}, "|"))
+}
+
+func (c *credential) Length() int {
+	return len(c.user) + len(c.password)
 }
