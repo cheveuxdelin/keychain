@@ -17,7 +17,7 @@ func IsNumber(r rune) bool {
 }
 
 func ReadSafeBytes() (b []byte) {
-	b, err := term.ReadPassword(syscall.Stdin)
+	b, err := term.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		log.Fatal(err)
 	}
