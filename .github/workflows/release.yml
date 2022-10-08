@@ -1,0 +1,24 @@
+# .github/workflows/release.yaml
+
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release-binary:
+    name: release binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: wangyoucao577/go-release-action@v1.32
+        with:
+          md5sum: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: ${{ matrix.goos }}
+          goarch: ${{ matrix.goarch }}
