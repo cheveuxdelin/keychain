@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/cheveuxdelin/keychain/secret"
 	"golang.org/x/term"
@@ -16,7 +17,7 @@ func IsNumber(r rune) bool {
 }
 
 func ReadSafeBytes() (b []byte) {
-	b, err := term.ReadPassword(0)
+	b, err := term.ReadPassword(syscall.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}
