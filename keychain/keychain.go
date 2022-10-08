@@ -138,7 +138,7 @@ func (k *Keychain) auth() {
 		k.setPassword(secret)
 	} else if err := k.login(secret); err != nil {
 		color.Red.Println("incorrect password 🚫")
-		os.Exit(1)
+		utils.CheckError(err)
 	}
 }
 func (k *Keychain) run() {
