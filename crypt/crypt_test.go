@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/cheveuxdelin/keychain/crypt"
-	"github.com/cheveuxdelin/keychain/secret"
+	"github.com/cheveuxdelin/keychain/utils"
 )
 
 func TestEncryptAndDecrpyt(t *testing.T) {
-	secret_test, err := secret.CreateSecret([]byte("test_secret"))
+	secret_test, err := utils.CreateSecret([]byte("test_secret"))
 	data_to_test := []byte("holis")
 	if err != nil {
 		t.Error(err)

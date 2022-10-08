@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/atotto/clipboard"
+	"github.com/cheveuxdelin/keychain/utils"
 	"github.com/gookit/color"
 )
 
@@ -52,5 +53,7 @@ func (c *credential) Length() int {
 }
 
 func (c *credential) Copy() {
-	clipboard.WriteAll(c.user + "|" + c.password)
+	if err := clipboard.WriteAll(c.user + "|" + c.password); err != nil {
+		utils.CheckError(err)
+	}
 }

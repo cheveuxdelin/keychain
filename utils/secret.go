@@ -1,4 +1,4 @@
-package secret
+package utils
 
 import (
 	"errors"
@@ -12,8 +12,7 @@ var errorBadSecretSize error = errors.New("secret must be between 1-32 ASCII cha
 
 func CreateSecret(b []byte) (s Secret, err error) {
 	if len(b)-1 > SECRET_SIZE || len(b)-1 == 0 {
-		err = errorBadSecretSize
-		return
+		CheckError(err)
 	}
 	s = make(Secret, SECRET_SIZE)
 	for i := 0; i < len(b)-1; i++ {

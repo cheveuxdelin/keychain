@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/cheveuxdelin/keychain/crypt"
-	"github.com/cheveuxdelin/keychain/secret"
 	"github.com/cheveuxdelin/keychain/utils"
 	"github.com/eiannone/keyboard"
 	"github.com/gookit/color"
@@ -24,16 +23,18 @@ type settings struct {
 
 type Keychain struct {
 	credentials []credential
-	secret      secret.Secret
+	secret      utils.Secret
 	settings    settings
 }
 
 func (k Keychain) credentialsToBytes() []byte {
 	var b bytes.Buffer
 	for i := range k.credentials {
-		b.WriteString(k.credentials[i].user)
+		_, err := b.WriteString(k.credentials[i].user)
+		utils.CheckError(err)
 		b.WriteByte(k.settings.wordDelimiter)
-		b.WriteString(k.credentials[i].password)
+		_, err = b.WriteString(k.credentials[i].password)
+		utils.CheckError(err)
 		b.WriteByte(k.settings.lineDelimiter)
 	}
 	return b.Bytes()
@@ -45,10 +46,9 @@ const TERMINAL_MINIMUM_WIDTH int = 30
 
 func (k *Keychain) save() {
 	encrypted, err := crypt.Encrypt(k.credentialsToBytes(), k.secret)
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.WriteFile(k.settings.filename, encrypted, 0777)
+	utils.CheckError(err)
+	err = os.WriteFile(k.settings.filename, encrypted, 0777)
+	utils.CheckError(err)
 }
 
 func (k *Keychain) load() (err error) {
@@ -91,24 +91,12 @@ func (k *Keychain) createCredential(user string, password string) {
 	k.save()
 }
 
-func (k *Keychain) setPassword(secret secret.Secret) {
+func (k *Keychain) setPassword(secret utils.Secret) {
 	k.secret = secret
 	k.save()
 }
 
-func (k *Keychain) login(secret secret.Secret) (err error) {
-	/*
-			fmt.Print("Insert 🔑: ")
-				reader := bufio.NewReader(os.Stdin)
-				b, err := reader.ReadBytes('\n')
-				if err != nil {
-					log.Fatal(err)
-				}
-				secret, err := secret.CreateSecret(enteredSecret)
-		if err != nil {
-			return err
-		}
-	*/
+func (k *Keychain) login(secret utils.Secret) (err error) {
 	k.secret = secret
 	err = k.load()
 	if err != nil {
@@ -157,7 +145,7 @@ func (k *Keychain) run() {
 	var safe bool = true
 	for {
 		clearConsole()
-		fmt.Println("Keychain v0.4.3")
+		fmt.Println("Keychain v0.5.0")
 		PrintHeaders()
 		var currentIndex int = len(k.credentials) - 1
 		ansi.CursorHide()
@@ -181,9 +169,7 @@ func (k *Keychain) run() {
 
 		for {
 			value, arrowKey, err := keyboard.GetKey()
-			if err != nil {
-				log.Fatal(err)
-			}
+			utils.CheckError(err)
 			if value == rune('q') {
 				ansi.CursorShow()
 				keyboard.Close()
