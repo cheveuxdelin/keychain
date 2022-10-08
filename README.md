@@ -1,15 +1,13 @@
 
 <h1 align="center">
   <br>
-  <img src="./assets/logo.gif" alt="Markdownify" width="200">
+  <img src="./assets/logo.gif" alt="Markdownify" width="400">
   <br>
-  Keychain
+    Keychain
   <br>
 </h1>
 
 <h4 align="center">A CLI Password Manager made with <a href="https://go.dev/" target="_blank">Go</a>.</h4>
-
-# lo de abajo todavia es template y hace falta cambiarlo
 
 <p align="center">
   <a href="https://badge.fury.io/js/electron-markdownify">
@@ -21,7 +19,7 @@
       <img src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg">
   </a>
   <a href="https://www.paypal.me/AmitMerchant">
-    <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&amp;style=flat">
+    <img src="./assets/demo.gif">
   </a>
 </p>
 
