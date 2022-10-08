@@ -158,6 +158,7 @@ func (k *Keychain) auth() {
 	}
 }
 func (k *Keychain) run() {
+	var safe bool = true
 	for {
 		clearConsole()
 		fmt.Println("--------------------------Keychain--------------------------")
@@ -165,9 +166,17 @@ func (k *Keychain) run() {
 		ansi.CursorHide()
 		for i := range k.credentials {
 			if i == len(k.credentials)-1 {
-				color.BgYellow.Println(k.credentials[i].print(i))
+				if !safe {
+					color.BgYellow.Println(k.credentials[i].Print(i))
+				} else {
+					color.BgYellow.Println(k.credentials[i].PrintSafe(i))
+				}
 			} else {
-				color.BgBlack.Println(k.credentials[i].print(i))
+				if !safe {
+					color.BgBlack.Println(k.credentials[i].Print(i))
+				} else {
+					color.BgBlack.Println(k.credentials[i].PrintSafe(i))
+				}
 			}
 		}
 		fmt.Print("a: add, q: quit")
@@ -189,7 +198,12 @@ func (k *Keychain) run() {
 				if indexToMove := int(value - '0'); indexToMove <= len(k.credentials)-1 {
 					if linesToMoveDown := indexToMove - currentIndex; linesToMoveDown != 0 {
 						ansi.CursorHorizontalAbsolute(0)
-						color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+						if !safe {
+							color.BgBlack.Print(k.credentials[currentIndex].Print(currentIndex))
+						} else {
+							color.BgBlack.Print(k.credentials[currentIndex].PrintSafe(currentIndex))
+						}
+
 						if linesToMoveDown > 0 {
 							if newIndex := currentIndex + linesToMoveDown; newIndex <= len(k.credentials)-1 {
 								ansi.CursorNextLine(linesToMoveDown)
@@ -209,7 +223,11 @@ func (k *Keychain) run() {
 			} else if arrowKey == keyboard.KeyArrowUp {
 				if currentIndex > 0 {
 					ansi.CursorHorizontalAbsolute(0)
-					color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+					if !safe {
+						color.BgBlack.Print(k.credentials[currentIndex].Print(currentIndex))
+					} else {
+						color.BgBlack.Print(k.credentials[currentIndex].PrintSafe(currentIndex))
+					}
 					ansi.CursorPreviousLine(0)
 					currentIndex--
 					didMove = true
@@ -217,7 +235,11 @@ func (k *Keychain) run() {
 			} else if arrowKey == keyboard.KeyArrowDown {
 				if currentIndex < len(k.credentials)-1 {
 					ansi.CursorHorizontalAbsolute(0)
-					color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+					if !safe {
+						color.BgBlack.Print(k.credentials[currentIndex].Print(currentIndex))
+					} else {
+						color.BgBlack.Print(k.credentials[currentIndex].PrintSafe(currentIndex))
+					}
 					ansi.CursorNextLine(0)
 					currentIndex++
 					didMove = true
@@ -228,10 +250,20 @@ func (k *Keychain) run() {
 			} else if value == 'd' && len(k.credentials) >= 0 {
 				k.DeleteCredential(currentIndex)
 				break
+			} else if value == 's' {
+				safe = false
+				break
+			} else if value == 'h' {
+				safe = true
+				break
 			}
 
 			if didMove {
-				color.BgYellow.Print(k.credentials[currentIndex].print(currentIndex))
+				if !safe {
+					color.BgYellow.Print(k.credentials[currentIndex].Print(currentIndex))
+				} else {
+					color.BgYellow.Print(k.credentials[currentIndex].PrintSafe(currentIndex))
+				}
 			}
 		}
 	}
