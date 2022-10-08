@@ -87,12 +87,6 @@ func (k *Keychain) createCredential(user string, password string) {
 	k.save()
 }
 
-func (k *Keychain) CreateCredential() {
-	user := utils.ReadString()
-	password := utils.ReadSafeBytes()
-	k.createCredential(user, string(password))
-}
-
 func (k *Keychain) setPassword(secret secret.Secret) {
 	/*
 		fmt.Print("Insert new secret 🔑 (Must be between 1-32 ASCII characters): ")
@@ -131,8 +125,14 @@ func (k *Keychain) userAlreadyCreated() bool {
 	_, err := os.Stat(k.settings.filename)
 	return errors.Is(err, os.ErrNotExist)
 }
+
 func startKeyboard() {
 	if err := keyboard.Open(); err != nil {
+		log.Fatal(err)
+	}
+}
+func closeKeyboard() {
+	if err := keyboard.Close(); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -158,76 +158,81 @@ func (k *Keychain) auth() {
 	}
 }
 func (k *Keychain) run() {
-	fmt.Println("-------------Keychain-------------")
-	for i := range k.credentials {
-		if i == len(k.credentials)-1 {
-			color.BgYellow.Println(k.credentials[i].print(i))
-		} else {
-			color.BgBlack.Println(k.credentials[i].print(i))
-		}
-	}
-
-	var currentIndex int = len(k.credentials) - 1
-
-	ansi.CursorHide()
-
-	fmt.Print("d: delete")
-
-	ansi.CursorPreviousLine(0)
-
 	for {
-		value, arrowKey, err := keyboard.GetSingleKey()
-		if err != nil {
-			log.Fatal(err)
+		clearConsole()
+		fmt.Println("--------------------------Keychain--------------------------")
+		var currentIndex int = len(k.credentials) - 1
+		ansi.CursorHide()
+		for i := range k.credentials {
+			if i == len(k.credentials)-1 {
+				color.BgYellow.Println(k.credentials[i].print(i))
+			} else {
+				color.BgBlack.Println(k.credentials[i].print(i))
+			}
 		}
-		if value == rune('q') {
-			ansi.CursorShow()
-			os.Exit(0)
-		}
+		fmt.Print("a: add, q: quit")
+		ansi.CursorPreviousLine(0)
 
-		didMove := false
+		for {
+			value, arrowKey, err := keyboard.GetKey()
+			if err != nil {
+				log.Fatal(err)
+			}
+			if value == rune('q') {
+				ansi.CursorShow()
+				os.Exit(0)
+			}
 
-		if utils.IsNumber(value) {
-			if indexToMove := int(value - '0'); indexToMove <= len(k.credentials)-1 {
-				if linesToMoveDown := indexToMove - currentIndex; linesToMoveDown != 0 {
-					ansi.CursorHorizontalAbsolute(0)
-					color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
-					if linesToMoveDown > 0 {
-						if newIndex := currentIndex + linesToMoveDown; newIndex <= len(k.credentials)-1 {
-							ansi.CursorNextLine(linesToMoveDown)
-							didMove = true
-							currentIndex = newIndex
-						}
-					} else if linesToMoveDown != 0 {
-						linesToMoveUp := -linesToMoveDown
-						if newIndex := currentIndex - linesToMoveUp; newIndex >= 0 {
-							ansi.CursorPreviousLine(linesToMoveUp)
-							didMove = true
-							currentIndex = newIndex
+			didMove := false
+
+			if utils.IsNumber(value) {
+				if indexToMove := int(value - '0'); indexToMove <= len(k.credentials)-1 {
+					if linesToMoveDown := indexToMove - currentIndex; linesToMoveDown != 0 {
+						ansi.CursorHorizontalAbsolute(0)
+						color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+						if linesToMoveDown > 0 {
+							if newIndex := currentIndex + linesToMoveDown; newIndex <= len(k.credentials)-1 {
+								ansi.CursorNextLine(linesToMoveDown)
+								didMove = true
+								currentIndex = newIndex
+							}
+						} else if linesToMoveDown != 0 {
+							linesToMoveUp := -linesToMoveDown
+							if newIndex := currentIndex - linesToMoveUp; newIndex >= 0 {
+								ansi.CursorPreviousLine(linesToMoveUp)
+								didMove = true
+								currentIndex = newIndex
+							}
 						}
 					}
 				}
+			} else if arrowKey == keyboard.KeyArrowUp {
+				if currentIndex > 0 {
+					ansi.CursorHorizontalAbsolute(0)
+					color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+					ansi.CursorPreviousLine(0)
+					currentIndex--
+					didMove = true
+				}
+			} else if arrowKey == keyboard.KeyArrowDown {
+				if currentIndex < len(k.credentials)-1 {
+					ansi.CursorHorizontalAbsolute(0)
+					color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
+					ansi.CursorNextLine(0)
+					currentIndex++
+					didMove = true
+				}
+			} else if value == 'a' {
+				k.CreateCredential()
+				break
+			} else if value == 'd' && len(k.credentials) >= 0 {
+				k.DeleteCredential(currentIndex)
+				break
 			}
-		} else if arrowKey == keyboard.KeyArrowUp {
-			if currentIndex > 0 {
-				ansi.CursorHorizontalAbsolute(0)
-				color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
-				ansi.CursorPreviousLine(0)
-				currentIndex--
-				didMove = true
-			}
-		} else if arrowKey == keyboard.KeyArrowDown {
-			if currentIndex < len(k.credentials)-1 {
-				ansi.CursorHorizontalAbsolute(0)
-				color.BgBlack.Print(k.credentials[currentIndex].print(currentIndex))
-				ansi.CursorNextLine(0)
-				currentIndex++
-				didMove = true
-			}
-		}
 
-		if didMove {
-			color.BgYellow.Print(k.credentials[currentIndex].print(currentIndex))
+			if didMove {
+				color.BgYellow.Print(k.credentials[currentIndex].print(currentIndex))
+			}
 		}
 	}
 }

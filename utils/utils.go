@@ -46,7 +46,7 @@ func ReadString() (s string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return
+	return s[:len(s)-1]
 }
 
 func RandomSecret() (s secret.Secret) {
