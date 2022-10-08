@@ -157,7 +157,7 @@ func (k *Keychain) run() {
 	var safe bool = true
 	for {
 		clearConsole()
-		fmt.Println("Keychain v0.4.2")
+		fmt.Println("Keychain v0.4.3")
 		PrintHeaders()
 		var currentIndex int = len(k.credentials) - 1
 		ansi.CursorHide()
