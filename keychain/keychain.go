@@ -117,7 +117,7 @@ func (k *Keychain) login(secret secret.Secret) (err error) {
 	return nil
 }
 
-func (k *Keychain) userAlreadyCreated() bool {
+func (k *Keychain) userIsNew() bool {
 	_, err := os.Stat(k.settings.filename)
 	return errors.Is(err, os.ErrNotExist)
 }
@@ -146,7 +146,7 @@ func (k *Keychain) Start() {
 func (k *Keychain) auth() {
 	fmt.Print("Insert 🔑: ")
 	secret := utils.GetEnteredPassword()
-	if k.userAlreadyCreated() {
+	if k.userIsNew() {
 		k.setPassword(secret)
 	} else if err := k.login(secret); err != nil {
 		color.Red.Println("incorrect password 🚫")
@@ -157,7 +157,7 @@ func (k *Keychain) run() {
 	var safe bool = true
 	for {
 		clearConsole()
-		fmt.Println("Keychain v0.3.0")
+		fmt.Println("Keychain v0.4.2")
 		PrintHeaders()
 		var currentIndex int = len(k.credentials) - 1
 		ansi.CursorHide()
