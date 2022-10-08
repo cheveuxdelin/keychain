@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/gookit/color"
 )
 
@@ -48,4 +49,8 @@ func (c *credential) PrintSafe(indexNumber int) string {
 
 func (c *credential) Length() int {
 	return len(c.user) + len(c.password)
+}
+
+func (c *credential) Copy() {
+	clipboard.WriteAll(c.user + "|" + c.password)
 }

@@ -254,6 +254,8 @@ func (k *Keychain) run() {
 			} else if value == 'h' {
 				safe = true
 				break
+			} else if value == 'c' {
+				k.credentials[currentIndex].Copy()
 			}
 
 			if didMove {
