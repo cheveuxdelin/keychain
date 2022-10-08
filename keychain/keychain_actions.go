@@ -9,7 +9,6 @@ import (
 
 func (k *Keychain) CreateCredential() {
 	closeKeyboard()
-	defer startKeyboard()
 	clearConsole()
 	ansi.CursorShow()
 	fmt.Print("user: ")
@@ -18,6 +17,8 @@ func (k *Keychain) CreateCredential() {
 	password := utils.ReadSafeBytes()
 	k.createCredential(user, string(password))
 	k.save()
+	fmt.Println(user, password)
+	startKeyboard()
 }
 
 func (k *Keychain) DeleteCredential(indexToDelete int) {

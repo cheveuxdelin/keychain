@@ -189,6 +189,7 @@ func (k *Keychain) run() {
 			}
 			if value == rune('q') {
 				ansi.CursorShow()
+				keyboard.Close()
 				os.Exit(0)
 			}
 

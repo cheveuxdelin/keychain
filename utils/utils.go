@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/cheveuxdelin/keychain/secret"
 	"golang.org/x/term"
@@ -46,7 +47,7 @@ func ReadString() (s string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return s[:len(s)-1]
+	return strings.TrimSpace(s)
 }
 
 func RandomSecret() (s secret.Secret) {
